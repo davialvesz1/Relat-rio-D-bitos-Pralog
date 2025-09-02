@@ -43,12 +43,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-[#2F6BFF] to-[#1E40AF] rounded-2xl flex items-center justify-center shadow-2xl mx-auto mb-6 border-2 border-white/20 overflow-hidden">
             <img 
-              src="/Bolinha-perfil-franquia_Prancheta-1[1].jpg" 
+              src={`${import.meta.env.BASE_URL}logocfsmart.jpg`} 
               alt="CF Smart Logo" 
               className="w-16 h-16 object-cover rounded-xl"
             />
           </div>
-          <h1 className="text-white text-3xl font-bold mb-2">Grupo Pralog</h1>
+          <h1 className="text-white text-3xl font-bold mb-2">Smart Tax</h1>
           <p className="text-[#E5F0FF]/80 text-sm">Dashboard de Situações Fiscais</p>
         </div>
 
@@ -161,7 +161,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-[#E5F0FF]/60 text-xs">
-            © 2025 CF Smart - Sistema de Gestão Fiscal
+            © 2025 Smart Tax - Sistema de Gestão Fiscal
           </p>
         </div>
       </div>

@@ -4,6 +4,9 @@ export interface DebitoData {
   CNPJ: string;
   'Tipo de Débito': string;
   Valor: number;
+  'Detalhamento de Débitos'?: string;
+  'Plano de Ação'?: string;
+  'Simulação de Parcelamento'?: string;
 }
 
 export interface AggregateData {

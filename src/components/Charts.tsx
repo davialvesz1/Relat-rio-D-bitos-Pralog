@@ -13,6 +13,13 @@ import {
   Legend,
 } from 'recharts';
 
+interface DetalhamentoEmpresa {
+  empresa: string;
+  detalhamento: string;
+  planoAcao?: string;
+  simulacaoParcelamento?: string;
+}
+
 interface ChartsProps {
   debitosPorGrupo: Array<{
     grupo: string;
@@ -30,6 +37,7 @@ interface ChartsProps {
     empresa: string;
     valor: number;
   }>;
+  detalhamentosPorEmpresa?: DetalhamentoEmpresa[];
 }
 
 const COLORS = {
@@ -41,7 +49,7 @@ const COLORS = {
 
 const PIE_COLORS = ['#60A5FA', '#3B82F6', '#1E40AF', '#1D4ED8'];
 
-const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, debitosPorEmpresa }) => {
+const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, debitosPorEmpresa, detalhamentosPorEmpresa = [] }) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -86,6 +94,38 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
         <div className="bg-[#0F2A5F] border border-white/20 rounded-lg p-3 shadow-lg">
           <p className="text-[#E5F0FF]">
             {payload[0].name}: {formatCurrency(payload[0].value)}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Tooltip customizado para Débitos por Empresa
+  const CustomTooltipEmpresa = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      // Encontrar detalhamento da empresa
+      const empresaDetalhe = detalhamentosPorEmpresa.find(e => e.empresa === label);
+      return (
+        <div className="bg-[#0F2A5F] border border-white/20 rounded-lg p-3 shadow-lg min-w-[260px]">
+          <p className="text-[#E5F0FF] font-medium mb-2">{label}</p>
+          {empresaDetalhe ? (
+            <>
+              {empresaDetalhe.detalhamento && (
+                <p className="text-[#E5F0FF]/90 text-xs mb-1"><span className="font-semibold">Débitos:</span> {empresaDetalhe.detalhamento}</p>
+              )}
+              {empresaDetalhe.planoAcao && (
+                <p className="text-[#E5F0FF]/80 text-xs mb-1"><span className="font-semibold">Plano de Ação:</span> {empresaDetalhe.planoAcao}</p>
+              )}
+              {empresaDetalhe.simulacaoParcelamento && (
+                <p className="text-[#E5F0FF]/70 text-xs"><span className="font-semibold">Simulação de Parcelamento:</span> {empresaDetalhe.simulacaoParcelamento}</p>
+              )}
+            </>
+          ) : (
+            <p className="text-[#E5F0FF]/60 text-xs">Sem detalhamento disponível.</p>
+          )}
+          <p className="text-[#2F6BFF] mt-2">
+            Total: {payload[0] && typeof payload[0].value === 'number' ? formatCurrency(payload[0].value) : ''}
           </p>
         </div>
       );
@@ -168,19 +208,7 @@ const Charts: React.FC<ChartsProps> = ({ debitosPorGrupo, distribuicaoPorTipo, d
               tickFormatter={formatCurrency}
             />
             <Tooltip 
-              content={({ active, payload, label }) => {
-                if (active && payload && payload.length) {
-                  return (
-                    <div className="bg-[#0F2A5F] border border-white/20 rounded-lg p-3 shadow-lg">
-                      <p className="text-[#E5F0FF] font-medium mb-2">{label}</p>
-                      <p className="text-[#2F6BFF]">
-                        Total: {formatCurrency(payload[0].value as number)}
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
+              content={CustomTooltipEmpresa}
             />
             <Bar dataKey="valor" fill="#2F6BFF" radius={[4, 4, 0, 0]} />
           </BarChart>

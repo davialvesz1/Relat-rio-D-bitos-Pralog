@@ -9,13 +9,71 @@ export const parseCSV = (csvText: string): DebitoData[] => {
     transformHeader: (header) => header.trim(),
   });
 
-  return result.data.map((row: any) => ({
-    GRUPO: row.GRUPO?.trim() || '',
-    'Nome da Empresa': row['Nome da Empresa']?.trim() || '',
-    CNPJ: row.CNPJ?.trim() || '',
-    'Tipo de Débito': row['Tipo de Débito']?.trim() || '',
-    Valor: parseFloat(row.Valor?.replace(/[^\d,-]/g, '').replace(',', '.')) || 0,
-  })).filter(item => item.GRUPO && item['Nome da Empresa'] && item['Tipo de Débito']);
+  console.log('=== DEBUG CSV PARSER ===');
+  console.log('Headers encontrados (exatos):', result.meta.fields || 'undefined');
+  console.log('Headers com espaços:', (result.meta.fields || []).map(h => `"${h}"`));
+  console.log('CSV completo (primeiros 500 chars):', csvText.substring(0, 500));
+  
+  // Verificar se os campos de detalhamento existem
+  const hasDetalhamento = (result.meta.fields || []).some(h => h.includes('Detalhamento'));
+  const hasPlanoAcao = (result.meta.fields || []).some(h => h.includes('Plano'));
+  const hasSimulacao = (result.meta.fields || []).some(h => h.includes('Simulação') || h.includes('Simulacao'));
+  
+  console.log('Campos encontrados:', {
+    temDetalhamento: hasDetalhamento,
+    temPlanoAcao: hasPlanoAcao,
+    temSimulacao: hasSimulacao
+  });
+
+  const parsedData = result.data.map((row: any) => {
+    // Debug: verificar se os campos estão sendo lidos
+    console.log('Row keys disponíveis:', Object.keys(row));
+    console.log('Row completa (bruta):', row);
+    console.log('Row values:', {
+      detalhamento: row['Detalhamento de Dbitos'],
+      planoAcao: row['Plano de Ao'],
+      simulacaoParcelamento: row['Simulao de Parcelamento']
+    });
+    
+    // Função para encontrar campo por palavra-chave
+    const findFieldByKeyword = (keywords: string[]) => {
+      for (const key in row) {
+        const lowerKey = key.toLowerCase();
+        for (const keyword of keywords) {
+          if (lowerKey.includes(keyword.toLowerCase())) {
+            return row[key];
+          }
+        }
+      }
+      return '';
+    };
+
+    const parsed = {
+      GRUPO: row.GRUPO?.trim() || '',
+      'Nome da Empresa': row['Nome da Empresa']?.trim() || '',
+      CNPJ: row.CNPJ?.trim() || '',
+      'Tipo de Débito': row['Tipo de Débito']?.trim() || '',
+      Valor: parseFloat(row.Valor?.replace(/[^\d,-]/g, '').replace(',', '.')) || 0,
+      'Detalhamento de Débitos': findFieldByKeyword(['detalhamento', 'dbitos']) || '',
+      'Plano de Ação': findFieldByKeyword(['plano', 'ao']) || '',
+      'Simulação de Parcelamento': findFieldByKeyword(['simulao', 'parcelamento']) || '',
+    };
+    
+    // Debug de cada linha
+    console.log('Linha parseada:', {
+      empresa: parsed['Nome da Empresa'],
+      detalhamento: parsed['Detalhamento de Débitos'],
+      planoAcao: parsed['Plano de Ação'],
+      simulacaoParcelamento: parsed['Simulação de Parcelamento']
+    });
+    
+    return parsed;
+  }).filter(item => item.GRUPO && item['Nome da Empresa'] && item['Tipo de Débito']);
+
+  console.log('Dados parseados (primeiras 2 linhas):', parsedData.slice(0, 2));
+  console.log('Total de registros parseados:', parsedData.length);
+
+  return parsedData;
 };
 
 const truncateCompanyName = (name: string): string => {

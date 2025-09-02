@@ -282,6 +282,10 @@ function App() {
       setData(parsedData);
       setOriginalCsvData(csvText);
       setIsUsingCustomData(true);
+
+      // Log detalhado dos grupos únicos
+      const gruposUnicos = [...new Set(parsedData.map(d => d.GRUPO))];
+      console.log('🔎 Grupos únicos encontrados após upload:', gruposUnicos);
       
       // Salvar backup local
       localStorage.setItem('dashboard_csv_backup', csvText);
@@ -514,30 +518,90 @@ function App() {
 
         {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
-          <MetricCard
-            title="Total Débitos Federais"
-            value={displayData.totalFederal}
-            icon={<TrendingUp size={24} className="text-white" />}
-            color="bg-[#2F6BFF]"
-          />
-          <MetricCard
-            title="Total Débitos PGFN"
-            value={displayData.totalPGFN}
-            icon={<Building size={24} className="text-white" />}
-            color="bg-[#1E40AF]"
-          />
-          <MetricCard
-            title="Total Débitos Estaduais"
-            value={displayData.totalEstadual}
-            icon={<AlertTriangle size={24} className="text-white" />}
-            color="bg-[#F97316]"
-          />
-          <MetricCard
-            title="Total Débitos Municipais"
-            value={displayData.totalMunicipal}
-            icon={<FileText size={24} className="text-white" />}
-            color="bg-[#6B7280]"
-          />
+          {(() => {
+            const detalhamentosFederal = data.filter(item => 
+              empresasSelecionadas.includes(item['Nome da Empresa']) && 
+              item['Tipo de Débito']?.toLowerCase() === 'federal'
+            ).map(item => ({
+              empresa: item['Nome da Empresa'],
+              detalhamento: item['Detalhamento de Débitos'] || '',
+              planoAcao: item['Plano de Ação'] || '',
+              simulacaoParcelamento: item['Simulação de Parcelamento'] || ''
+            }));
+            console.log('Detalhamentos Federal:', detalhamentosFederal);
+            return (
+              <MetricCard
+                title="Total Débitos Federais"
+                value={displayData.totalFederal}
+                icon={<TrendingUp size={24} className="text-white" />}
+                color="bg-[#2F6BFF]"
+                detalhamentos={detalhamentosFederal}
+              />
+            );
+          })()}
+          {(() => {
+            const detalhamentosPGFN = data.filter(item => 
+              empresasSelecionadas.includes(item['Nome da Empresa']) && 
+              item['Tipo de Débito']?.toLowerCase() === 'pgfn'
+            ).map(item => ({
+              empresa: item['Nome da Empresa'],
+              detalhamento: item['Detalhamento de Débitos'] || '',
+              planoAcao: item['Plano de Ação'] || '',
+              simulacaoParcelamento: item['Simulação de Parcelamento'] || ''
+            }));
+            console.log('Detalhamentos PGFN:', detalhamentosPGFN);
+            return (
+              <MetricCard
+                title="Total Débitos PGFN"
+                value={displayData.totalPGFN}
+                icon={<Building size={24} className="text-white" />}
+                color="bg-[#1E40AF]"
+                detalhamentos={detalhamentosPGFN}
+              />
+            );
+          })()}
+          {(() => {
+            const detalhamentosEstadual = data.filter(item => 
+              empresasSelecionadas.includes(item['Nome da Empresa']) && 
+              item['Tipo de Débito']?.toLowerCase() === 'estadual'
+            ).map(item => ({
+              empresa: item['Nome da Empresa'],
+              detalhamento: item['Detalhamento de Débitos'] || '',
+              planoAcao: item['Plano de Ação'] || '',
+              simulacaoParcelamento: item['Simulação de Parcelamento'] || ''
+            }));
+            console.log('Detalhamentos Estadual:', detalhamentosEstadual);
+            return (
+              <MetricCard
+                title="Total Débitos Estaduais"
+                value={displayData.totalEstadual}
+                icon={<AlertTriangle size={24} className="text-white" />}
+                color="bg-[#F97316]"
+                detalhamentos={detalhamentosEstadual}
+              />
+            );
+          })()}
+          {(() => {
+            const detalhamentosMunicipal = data.filter(item => 
+              empresasSelecionadas.includes(item['Nome da Empresa']) && 
+              item['Tipo de Débito']?.toLowerCase() === 'municipal'
+            ).map(item => ({
+              empresa: item['Nome da Empresa'],
+              detalhamento: item['Detalhamento de Débitos'] || '',
+              planoAcao: item['Plano de Ação'] || '',
+              simulacaoParcelamento: item['Simulação de Parcelamento'] || ''
+            }));
+            console.log('Detalhamentos Municipal:', detalhamentosMunicipal);
+            return (
+              <MetricCard
+                title="Total Débitos Municipais"
+                value={displayData.totalMunicipal}
+                icon={<FileText size={24} className="text-white" />}
+                color="bg-[#6B7280]"
+                detalhamentos={detalhamentosMunicipal}
+              />
+            );
+          })()}
         </div>
 
         {/* Charts */}
@@ -545,6 +609,12 @@ function App() {
           debitosPorGrupo={displayData.debitosPorGrupo}
           distribuicaoPorTipo={displayData.distribuicaoPorTipo}
           debitosPorEmpresa={displayData.debitosPorEmpresa}
+          detalhamentosPorEmpresa={data.filter(item => empresasSelecionadas.includes(item['Nome da Empresa'])).map(item => ({
+            empresa: item['Nome da Empresa'],
+            detalhamento: item['Detalhamento de Débitos'] || '',
+            planoAcao: item['Plano de Ação'] || '',
+            simulacaoParcelamento: item['Simulação de Parcelamento'] || ''
+          }))}
         />
       </div>
     </div>
